@@ -1,15 +1,15 @@
 {
-  "manifest_version": 2,
-  "name": "My ModHeader Extension",
+  "manifest_version": 3,
+  "name": "HeaderTweakr",
   "version": "1.0",
-  "description": "A Chrome extension to modify request headers.",
-  "permissions": ["webRequest", "webRequestBlocking", "<all_urls>"],
-  "browser_action": {
-    "default_icon": "icon.png",
-    "default_popup": "popup/popup.html"
+  "description": "Modify request headers with ease",
+  "permissions": ["declarativeNetRequest"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "HeaderTweakr"
   },
   "background": {
-    "scripts": ["background.js"],
-    "persistent": false
+    "service_worker": "background.js"
   }
 }

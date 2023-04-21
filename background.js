@@ -1,43 +1,29 @@
-chrome.storage.sync.get("headers", (data) => {
-  setHeaders(data.headers || {});
+const allResourceTypes = Object.values(
+  chrome.declarativeNetRequest.ResourceType
+);
+
+const rules = [
+  {
+    id: 1,
+    priority: 1,
+    action: {
+      type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+      requestHeaders: [
+        {
+          operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+          header: "x-test-request-header",
+          value: "header-tweakr",
+        },
+      ],
+    },
+    condition: {
+      urlFilter: "https://httpbin.org/headers",
+      resourceTypes: allResourceTypes,
+    },
+  },
+];
+
+chrome.declarativeNetRequest.updateDynamicRules({
+  removeRuleIds: rules.map((rule) => rule.id), // remove existing rules
+  addRules: rules,
 });
-
-chrome.storage.onChanged.addListener((changes) => {
-  if (changes.headers) {
-    setHeaders(changes.headers.newValue || {});
-  }
-});
-
-function setHeaders(headers) {
-  if (chrome.webRequest.onBeforeSendHeaders.hasListener(onBeforeSendHeaders)) {
-    chrome.webRequest.onBeforeSendHeaders.removeListener(onBeforeSendHeaders);
-  }
-
-  chrome.webRequest.onBeforeSendHeaders.addListener(
-    onBeforeSendHeaders,
-    { urls: ["<all_urls>"] },
-    ["blocking", "requestHeaders"]
-  );
-
-  function onBeforeSendHeaders(details) {
-    const newHeaders = details.requestHeaders;
-
-    for (const [name, value] of Object.entries(headers)) {
-      let found = false;
-
-      for (const header of newHeaders) {
-        if (header.name.toLowerCase() === name.toLowerCase()) {
-          header.value = value;
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        newHeaders.push({ name: name, value: value });
-      }
-    }
-
-    return { requestHeaders: newHeaders };
-  }
-}
